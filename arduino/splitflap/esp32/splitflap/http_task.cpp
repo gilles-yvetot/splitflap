@@ -25,25 +25,8 @@
 
 using namespace json11;
 
-// About this example:
-// - Fetches current weather data for an area in San Francisco (updating infrequently)
-// - Cycles between showing the temperature and the wind speed on the split-flaps (cycles frequently)
-//
-// Make sure to set up secrets.h - see secrets.h.example for more.
-//
-// What this example demonstrates:
-// - a simple JSON GET request (see fetchData)
-// - json response parsing using json11 (see handleData)
-// - cycling through messages at a different interval than data is loaded (see run)
-
 // Update data every 10 sec
 #define REQUEST_INTERVAL_MILLIS (10 * 1000)
-
-// Cycle the message that's showing more frequently, every 30 seconds (exaggerated for example purposes)
-#define MESSAGE_CYCLE_INTERVAL_MILLIS (30 * 1000)
-
-// Don't show stale data if it's been too long since successful data load
-#define STALE_TIME_MILLIS (REQUEST_INTERVAL_MILLIS * 3)
 
 #define SPLITFLAP_API_KEY "MY MONGO LAMBDA API KEY"
 
@@ -106,7 +89,6 @@ bool HTTPTask::handleData(Json json)
   // Extract data from the json response. You could use ArduinoJson, but I find json11 to be much
   // easier to use albeit not optimized for a microcontroller.
 
-  
   // Validate json structure and extract data:
   auto station = json["message"];
   if (!station.is_string())
@@ -114,7 +96,6 @@ bool HTTPTask::handleData(Json json)
     logger_.log("Cannot parse message received by splitflap API");
     return false;
   }
-
 
   char buf[200];
   snprintf(buf, sizeof(buf), "Received message: %s", station.string_value().c_str());
@@ -200,7 +181,6 @@ void HTTPTask::run()
       }
       http_last_request_time_ = millis();
     }
-
 
     if (update)
     {
