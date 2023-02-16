@@ -165,6 +165,8 @@ void HTTPTask::run()
 {
   char buf[max(NUM_MODULES + 1, 200)];
 
+  String current_message;
+
   connectWifi();
 
   while (1)
@@ -192,15 +194,17 @@ void HTTPTask::run()
       if (messages_.size() > 0)
       {
         String message = messages_[current_message_index_].c_str();
+        if (message != current_message)
+        {
+          current_message = message;
+          snprintf(buf, sizeof(buf), "Cycling to next message: %s", message.c_str());
+          logger_.log(buf);
 
-        snprintf(buf, sizeof(buf), "Cycling to next message: %s", message.c_str());
-        logger_.log(buf);
-
-        // Pad message for display
-        size_t len = strlcpy(buf, message.c_str(), sizeof(buf));
-        memset(buf + len, ' ', sizeof(buf) - len);
-
-        splitflap_task_.showString(buf, NUM_MODULES, false);
+          // Pad message for display
+          size_t len = strlcpy(buf, message.c_str(), sizeof(buf));
+          memset(buf + len, ' ', sizeof(buf) - len);
+          splitflap_task_.showString(buf, NUM_MODULES, false);
+        }
       }
 
       current_message_index_++;
