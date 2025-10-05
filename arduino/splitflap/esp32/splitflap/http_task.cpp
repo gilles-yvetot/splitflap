@@ -28,10 +28,10 @@ using namespace json11;
 // Update data every 10 sec
 #define REQUEST_INTERVAL_MILLIS (10 * 1000)
 
-#define SPLITFLAP_API_KEY "MY MONGO LAMBDA API KEY"
+#define SPLITFLAP_API_KEY "Bearer token_from_app/api/users/_authenticate.ts"
 
-// Timezone for local time strings; this is America/Los_Angeles. See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv
-#define TIMEZONE "PST8PDT,M3.2.0,M11.1.0"
+// Timezone for local time strings; this is America/New_York. See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv
+#define TIMEZONE "EST5EDT,M3.2.0,M11.1.0"
 
 bool HTTPTask::fetchData()
 {
@@ -40,12 +40,12 @@ bool HTTPTask::fetchData()
   HTTPClient http;
 
   // Construct the http request
-  http.begin("https://data.mongodb-api.com/app/data-sjeir/endpoint/messages/latest");
+  http.begin("https://splitflap-client.vercel.app/api/messages");
   http.setTimeout(10000);
 
   // If you wanted to add headers, you would do so like this:
   http.addHeader("content-type", "application/json;charset=UTF-8");
-  http.addHeader("api-key", SPLITFLAP_API_KEY);
+  http.addHeader("authorization", SPLITFLAP_API_KEY);
 
   // Send the request as a GET
   logger_.log("Sending request");
@@ -90,21 +90,21 @@ bool HTTPTask::handleData(Json json)
   // easier to use albeit not optimized for a microcontroller.
 
   // Validate json structure and extract data:
-  auto station = json["message"];
-  if (!station.is_string())
+  auto message = json["message"];
+  if (!message.is_string())
   {
     logger_.log("Cannot parse message received by splitflap API");
     return false;
   }
 
   char buf[200];
-  snprintf(buf, sizeof(buf), "Received message: %s", station.string_value().c_str());
+  snprintf(buf, sizeof(buf), "Received message: %s", message.string_value().c_str());
   logger_.log(buf);
 
   // Construct the messages to display
   messages_.clear();
 
-  snprintf(buf, sizeof(buf), "%s", station.string_value().c_str());
+  snprintf(buf, sizeof(buf), "%s", message.string_value().c_str());
   messages_.push_back(String(buf));
 
   // Show the data fetch time on the LCD
